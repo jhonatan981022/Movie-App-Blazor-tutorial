@@ -1,0 +1,330 @@
+@page "/movie/{MovieId:int}"
+@using MovieApp.Models
+@using MovieApp.Services
+@inject MovieService MovieService
+@inject NavigationManager Navigation
+
+<PageTitle>@(movieDetails?.Title ?? "Cargando...") - MovieApp</PageTitle>
+
+<!-- Página de detalles moderna estilo streaming -->
+<div class="min-h-screen bg-black">
+    <!-- Loading screen cinematográfico -->
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center min-h-screen bg-black">
+            <div class="text-center">
+                <div class="relative mb-8">
+                    <div class="w-24 h-24 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+                    <div class="absolute inset-0 w-24 h-24 border-4 border-transparent border-t-white/20 rounded-full animate-spin mx-auto" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Cargando película...</h2>
+                <p class="text-gray-400">Preparando la experiencia cinematográfica</p>
+                <div class="flex justify-center space-x-1 mt-4">
+                    <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                    <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Contenido principal de la película -->
+    @if (movieDetails != null)
+    {
+        <!-- Hero section cinematográfico -->
+        <div class="relative min-h-screen">
+            <!-- Background con múltiples capas -->
+            @if (!string.IsNullOrEmpty(movieDetails.FullBackdropPath))
+            {
+                <div class="absolute inset-0">
+                    <img src="@movieDetails.FullBackdropPath"
+                         alt="@movieDetails.Title backdrop"
+                         class="w-full h-full object-cover scale-105" />
+                    <!-- Gradientes múltiples para mejor legibilidad -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+                </div>
+            }
+
+            <!-- Navigation bar flotante -->
+            <div class="relative z-20 p-6">
+                <button @onclick="GoBack"
+                        class="group flex items-center space-x-3 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white px-6 py-3 rounded-full transition-all duration-300 border border-white/20 hover:border-white/40">
+                    <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <span class="font-medium">Volver</span>
+                </button>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="relative z-10 flex items-center min-h-screen pt-20 pb-32">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full">
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+                        <!-- Póster con efectos -->
+                        <div class="lg:col-span-2">
+                            <div class="relative group">
+                                <div class="absolute -inset-4 bg-gradient-to-r from-red-600 to-purple-600 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
+                                <img src="@movieDetails.FullPosterPath"
+                                     alt="@movieDetails.Title"
+                                     class="relative w-full max-w-lg mx-auto rounded-2xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500" />
+
+                                <!-- Play button overlay -->
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="bg-black/60 backdrop-blur-sm rounded-full p-6">
+                                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-2xl ml-1">▶️</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de la película -->
+                        <div class="lg:col-span-3 space-y-8">
+                            <!-- Título y tagline -->
+                            <div>
+                                <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+                                    @movieDetails.Title
+                                </h1>
+
+                                @if (!string.IsNullOrEmpty(movieDetails.Tagline))
+                                {
+                                    <p class="text-2xl text-gray-300 italic mb-6 font-light">
+                                        "@movieDetails.Tagline"
+                                    </p>
+                                }
+
+                                <!-- Metadatos con diseño moderno -->
+                                <div class="flex flex-wrap items-center gap-6 mb-8">
+                                    <div class="flex items-center space-x-2 bg-yellow-500/20 backdrop-blur-sm rounded-full px-4 py-2">
+                                        <span class="text-yellow-400 text-xl">⭐</span>
+                                        <span class="font-bold text-white text-lg">@movieDetails.VoteAverage.ToString("F1")</span>
+                                        <span class="text-gray-300 text-sm">(@movieDetails.VoteCount.ToString("N0"))</span>
+                                    </div>
+
+                                    @if (movieDetails.Runtime > 0)
+                                    {
+                                        <div class="flex items-center space-x-2 bg-blue-500/20 backdrop-blur-sm rounded-full px-4 py-2">
+                                            <span class="text-blue-400">🕐</span>
+                                            <span class="text-white font-semibold">@movieDetails.FormattedRuntime</span>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(movieDetails.ReleaseDate))
+                                    {
+                                        <div class="flex items-center space-x-2 bg-green-500/20 backdrop-blur-sm rounded-full px-4 py-2">
+                                            <span class="text-green-400">📅</span>
+                                            <span class="text-white font-semibold">@DateTime.Parse(movieDetails.ReleaseDate).ToString("yyyy")</span>
+                                        </div>
+                                    }
+
+                                    <div class="bg-red-600 text-white px-4 py-2 rounded-full font-bold text-sm">
+                                        HD
+                                    </div>
+                                </div>
+
+                                <!-- Botones de acción -->
+                                <div class="flex flex-wrap gap-4 mb-8">
+                                    <button class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                        <span class="text-xl">▶️</span>
+                                        <span>Reproducir</span>
+                                    </button>
+                                    <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center space-x-3 border border-white/30">
+                                        <span>➕</span>
+                                        <span>Mi Lista</span>
+                                    </button>
+                                    <button class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-6 py-4 rounded-xl transition-all duration-300 border border-white/20">
+                                        <span class="text-xl">👍</span>
+                                    </button>
+                                    <button class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-6 py-4 rounded-xl transition-all duration-300 border border-white/20">
+                                        <span class="text-xl">📤</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Géneros -->
+                            @if (movieDetails.Genres.Any())
+                            {
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-4">Géneros</h3>
+                                    <div class="flex flex-wrap gap-3">
+                                        @foreach (var genre in movieDetails.Genres)
+                                        {
+                                            <span class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                                                @genre.Name
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Sinopsis -->
+                            @if (!string.IsNullOrEmpty(movieDetails.Overview))
+                            {
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-4">Sinopsis</h3>
+                                    <p class="text-gray-300 text-lg leading-relaxed">
+                                        @movieDetails.Overview
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de información adicional -->
+        <div class="bg-gradient-to-b from-black to-gray-900 py-20">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <!-- Información financiera y técnica -->
+                @if (movieDetails.Budget > 0 || movieDetails.Revenue > 0)
+                {
+                    <div class="mb-16">
+                        <h2 class="text-3xl font-bold text-white mb-8 text-center">Información de Producción</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            @if (movieDetails.Budget > 0)
+                            {
+                                <div class="bg-gradient-to-br from-green-900/50 to-green-800/50 backdrop-blur-sm rounded-2xl p-6 border border-green-700/30">
+                                    <div class="text-green-400 text-3xl mb-3">💰</div>
+                                    <h4 class="text-green-300 text-sm font-semibold mb-2">PRESUPUESTO</h4>
+                                    <p class="text-white text-2xl font-bold">
+                                        $@movieDetails.Budget.ToString("N0")
+                                    </p>
+                                </div>
+                            }
+
+                            @if (movieDetails.Revenue > 0)
+                            {
+                                <div class="bg-gradient-to-br from-blue-900/50 to-blue-800/50 backdrop-blur-sm rounded-2xl p-6 border border-blue-700/30">
+                                    <div class="text-blue-400 text-3xl mb-3">📈</div>
+                                    <h4 class="text-blue-300 text-sm font-semibold mb-2">RECAUDACIÓN</h4>
+                                    <p class="text-white text-2xl font-bold">
+                                        $@movieDetails.Revenue.ToString("N0")
+                                    </p>
+                                </div>
+                            }
+
+                            <div class="bg-gradient-to-br from-purple-900/50 to-purple-800/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-700/30">
+                                <div class="text-purple-400 text-3xl mb-3">⭐</div>
+                                <h4 class="text-purple-300 text-sm font-semibold mb-2">PUNTUACIÓN</h4>
+                                <p class="text-white text-2xl font-bold">
+                                    @movieDetails.VoteAverage.ToString("F1")/10
+                                </p>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-red-900/50 to-red-800/50 backdrop-blur-sm rounded-2xl p-6 border border-red-700/30">
+                                <div class="text-red-400 text-3xl mb-3">👥</div>
+                                <h4 class="text-red-300 text-sm font-semibold mb-2">VOTOS</h4>
+                                <p class="text-white text-2xl font-bold">
+                                    @movieDetails.VoteCount.ToString("N0")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Call to action -->
+                <div class="text-center">
+                    <div class="bg-gradient-to-r from-red-600/20 to-purple-600/20 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
+                        <h2 class="text-4xl font-bold text-white mb-4">¿Te gustó esta película?</h2>
+                        <p class="text-gray-300 text-lg mb-8">Descubre más películas increíbles en nuestra colección</p>
+                        <button @onclick="GoBack"
+                                class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            🎬 Explorar Más Películas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Error state moderno -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="min-h-screen bg-black flex items-center justify-center px-4">
+            <div class="max-w-2xl mx-auto text-center">
+                <div class="bg-gradient-to-br from-red-900/50 to-red-800/50 backdrop-blur-sm rounded-3xl p-12 border border-red-700/30">
+                    <div class="text-8xl mb-6">😞</div>
+                    <h2 class="text-3xl font-bold text-white mb-4">¡Oops! Algo salió mal</h2>
+                    <p class="text-red-300 text-lg mb-8">@errorMessage</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button @onclick="LoadMovieDetails"
+                                class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg">
+                            <span>🔄</span>
+                            <span>Reintentar</span>
+                        </button>
+                        <button @onclick="GoBack"
+                                class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 border border-white/30">
+                            <span>← Volver al Inicio</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Parámetro de ruta que contiene el ID de la película
+    /// </summary>
+    [Parameter] public int MovieId { get; set; }
+
+    // Estado del componente
+    private Models.MovieDetails? movieDetails;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    /// <summary>
+    /// Se ejecuta cuando el componente se inicializa o cuando cambia el parámetro MovieId
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadMovieDetails();
+    }
+
+    /// <summary>
+    /// Carga los detalles de la película desde la API
+    /// </summary>
+    private async Task LoadMovieDetails()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            movieDetails = null;
+            StateHasChanged();
+
+            var details = await MovieService.GetMovieDetailsAsync(MovieId);
+            
+            if (details != null)
+            {
+                movieDetails = details;
+            }
+            else
+            {
+                errorMessage = "No se pudieron cargar los detalles de la película. Verifica tu conexión a internet.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar los detalles: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Navega de regreso a la página principal
+    /// </summary>
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

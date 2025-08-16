@@ -1,0 +1,166 @@
+﻿@inherits LayoutComponentBase
+
+<!-- Layout moderno estilo streaming -->
+<div class="min-h-screen bg-black">
+    <!-- Header flotante moderno -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
+        <div class="bg-black/80 backdrop-blur-md border-b border-white/10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <!-- Logo moderno -->
+                    <div class="flex items-center">
+                        <a href="/" class="flex items-center space-x-3 group">
+                            <div class="relative">
+                                <div class="w-12 h-12 bg-gradient-to-r from-red-600 to-red-700 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                    <span class="text-white font-bold text-2xl">🎬</span>
+                                </div>
+                                <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-700 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-black text-white group-hover:text-red-400 transition-colors duration-300">
+                                    CineStream
+                                </h1>
+                                <p class="text-gray-400 text-xs font-medium">Premium Movies</p>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Navegación moderna -->
+                    <nav class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="relative text-white hover:text-red-400 transition-colors duration-300 font-semibold group">
+                            <span>Inicio</span>
+                            <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300"></div>
+                        </a>
+                        <a href="#" class="relative text-gray-300 hover:text-red-400 transition-colors duration-300 font-semibold group">
+                            <span>Tendencias</span>
+                            <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300"></div>
+                        </a>
+                        <a href="#" class="relative text-gray-300 hover:text-red-400 transition-colors duration-300 font-semibold group">
+                            <span>Géneros</span>
+                            <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300"></div>
+                        </a>
+                        <a href="#" class="relative text-gray-300 hover:text-red-400 transition-colors duration-300 font-semibold group">
+                            <span>Mi Lista</span>
+                            <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300"></div>
+                        </a>
+                    </nav>
+
+                    <!-- Acciones del usuario -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Búsqueda -->
+                        <button class="hidden md:block text-gray-300 hover:text-white transition-colors duration-300 p-2 hover:bg-white/10 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Notificaciones -->
+                        <button class="hidden md:block text-gray-300 hover:text-white transition-colors duration-300 p-2 hover:bg-white/10 rounded-lg relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                            </svg>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full"></div>
+                        </button>
+
+                        <!-- Avatar/Perfil -->
+                        <div class="hidden md:block">
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-300">
+                                <span class="text-white text-sm font-bold">U</span>
+                            </div>
+                        </div>
+
+                        <!-- Menú móvil -->
+                        <button class="md:hidden text-gray-300 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main>
+        @Body
+    </main>
+
+    <!-- Footer moderno -->
+    <footer class="bg-gradient-to-t from-black to-gray-900 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo y descripción -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-red-600 to-red-700 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">🎬</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">CineStream</h3>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md">
+                        Tu destino definitivo para descubrir las mejores películas. Explora, disfruta y comparte tu pasión por el cine.
+                    </p>
+                    <div class="flex space-x-4">
+                        <button class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg transition-colors duration-300">
+                            <span class="text-xl">📱</span>
+                        </button>
+                        <button class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg transition-colors duration-300">
+                            <span class="text-xl">🐦</span>
+                        </button>
+                        <button class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg transition-colors duration-300">
+                            <span class="text-xl">📘</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enlaces rápidos -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Explorar</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Películas Populares</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Próximos Estrenos</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Top Rated</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Géneros</a></li>
+                    </ul>
+                </div>
+
+                <!-- Soporte -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Soporte</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Centro de Ayuda</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Contacto</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Términos de Uso</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Privacidad</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="border-t border-white/10 mt-12 pt-8 text-center">
+                <p class="text-gray-400">
+                    © 2024 CineStream. Desarrollado con ❤️ usando Blazor WebAssembly y Tailwind CSS
+                </p>
+                <p class="text-gray-500 text-sm mt-2">
+                    Datos proporcionados por The Movie Database (TMDb) • Este producto utiliza la API de TMDb pero no está respaldado ni certificado por TMDb
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Script para navbar dinámico -->
+<script>
+    window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > 100) {
+            navbar.classList.add('bg-black/95');
+            navbar.classList.remove('bg-black/80');
+        } else {
+            navbar.classList.add('bg-black/80');
+            navbar.classList.remove('bg-black/95');
+        }
+    });
+</script>

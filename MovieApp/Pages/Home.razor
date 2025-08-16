@@ -1,0 +1,415 @@
+﻿@page "/"
+@using MovieApp.Models
+@using MovieApp.Services
+@inject MovieService MovieService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>MovieApp - Películas Populares</PageTitle>
+
+<!-- Página principal moderna estilo streaming -->
+<div class="min-h-screen bg-black">
+    <!-- Hero Section con película destacada -->
+    @if (featuredMovie != null)
+    {
+        <div class="relative h-screen overflow-hidden">
+            <!-- Background Image -->
+            <div class="absolute inset-0">
+                <img src="@featuredMovie.FullBackdropPath"
+                     alt="@featuredMovie.Title"
+                     class="w-full h-full object-cover scale-110" />
+                <div class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            </div>
+
+            <!-- Hero Content -->
+            <div class="relative z-10 flex items-center h-full">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-2xl">
+                        <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+                            @featuredMovie.Title
+                        </h1>
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="flex items-center space-x-1">
+                                <span class="text-yellow-400 text-xl">⭐</span>
+                                <span class="text-white font-bold text-lg">@featuredMovie.VoteAverage.ToString("F1")</span>
+                            </div>
+                            <span class="text-gray-300">•</span>
+                            <span class="text-gray-300 font-medium">@(DateTime.TryParse(featuredMovie.ReleaseDate, out var date) ? date.Year.ToString() : "N/A")</span>
+                            <span class="text-gray-300">•</span>
+                            <span class="bg-red-600 text-white px-2 py-1 rounded text-sm font-bold">HD</span>
+                        </div>
+                        <p class="text-gray-200 text-lg leading-relaxed mb-8 line-clamp-3">
+                            @featuredMovie.Overview
+                        </p>
+                        <div class="flex space-x-4">
+                            <button @onclick="() => NavigateToDetails(featuredMovie.Id)"
+                                    class="bg-white text-black px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-200 transition-all duration-300 flex items-center space-x-2 shadow-lg">
+                                <span>▶️</span>
+                                <span>Ver Ahora</span>
+                            </button>
+                            <button class="bg-gray-600/80 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2 backdrop-blur-sm">
+                                <span>ℹ️</span>
+                                <span>Más Info</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                    <div class="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Indicador de carga inicial -->
+    @if (isLoading && movies.Count == 0)
+    {
+        <div class="flex justify-center items-center py-20">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p class="text-gray-300 text-lg">Cargando películas populares...</p>
+            </div>
+        </div>
+    }
+
+    <!-- Secciones de películas estilo Netflix -->
+    @if (movies.Count > 0)
+    {
+        <div class="relative z-10 -mt-32 space-y-12 pb-20">
+            <!-- Trending Now -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">🔥 Tendencias Ahora</h2>
+                    <button class="text-red-500 hover:text-red-400 font-semibold flex items-center space-x-1">
+                        <span>Ver Todo</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <!-- Scroll horizontal de películas -->
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div class="flex space-x-4 pb-4" style="width: max-content;">
+                        @foreach (var movie in movies.Take(10))
+                        {
+                            <div class="group relative cursor-pointer transform transition-all duration-300 hover:scale-105"
+                                 @onclick="() => NavigateToDetails(movie.Id)">
+                                <div class="relative w-48 h-72 rounded-lg overflow-hidden shadow-2xl">
+                                    <img src="@movie.FullPosterPath"
+                                         alt="@movie.Title"
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                         loading="lazy" />
+
+                                    <!-- Overlay gradient -->
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                                    <!-- Rating badge -->
+                                    <div class="absolute top-3 right-3 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1">
+                                        <span class="text-yellow-400 text-sm font-bold">
+                                            ⭐ @movie.VoteAverage.ToString("F1")
+                                        </span>
+                                    </div>
+
+                                    <!-- Play button overlay -->
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-4">
+                                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                                                <span class="text-black text-xl ml-1">▶️</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Movie info -->
+                                    <div class="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                        <h3 class="text-white font-bold text-sm mb-1 line-clamp-2">@movie.Title</h3>
+                                        <p class="text-gray-300 text-xs">@movie.ReleaseYear</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Movies Grid -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">🎬 Películas Populares</h2>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-400 text-sm">@movies.Count de @totalResults películas</span>
+                    </div>
+                </div>
+
+                <!-- Grid moderno de películas -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    @foreach (var movie in movies.Skip(10))
+                    {
+                        <div class="group relative cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-10"
+                             @onclick="() => NavigateToDetails(movie.Id)">
+                            <div class="relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg">
+                                <img src="@movie.FullPosterPath"
+                                     alt="@movie.Title"
+                                     class="w-full h-full object-cover group-hover:brightness-110 transition-all duration-300"
+                                     loading="lazy" />
+
+                                <!-- Hover overlay -->
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-white text-lg">▶️</span>
+                                        </div>
+                                        <h3 class="text-white font-bold text-sm mb-2 line-clamp-2">@movie.Title</h3>
+                                        <div class="flex items-center justify-center space-x-1 mb-2">
+                                            <span class="text-yellow-400 text-xs">⭐</span>
+                                            <span class="text-white text-xs font-semibold">@movie.VoteAverage.ToString("F1")</span>
+                                        </div>
+                                        <p class="text-gray-300 text-xs">@movie.ReleaseYear</p>
+                                    </div>
+                                </div>
+
+                                <!-- Quick rating -->
+                                <div class="absolute top-2 left-2 bg-black/80 backdrop-blur-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <span class="text-yellow-400 text-xs font-bold">@movie.VoteAverage.ToString("F1")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Loading states modernos -->
+    @if (isLoadingMore)
+    {
+        <div class="flex justify-center py-12">
+            <div class="text-center">
+                <div class="relative">
+                    <div class="w-16 h-16 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <div class="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-white/20 rounded-full animate-spin mx-auto" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                </div>
+                <p class="text-gray-300 font-medium">Cargando más películas increíbles...</p>
+                <div class="flex justify-center space-x-1 mt-2">
+                    <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                    <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- End message moderno -->
+    @if (hasReachedEnd && movies.Count > 0)
+    {
+        <div class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <div class="text-6xl mb-4">🎬</div>
+                <h3 class="text-2xl font-bold text-white mb-2">¡Eso es todo por ahora!</h3>
+                <p class="text-gray-400 mb-6">Has explorado todas las películas populares disponibles.</p>
+                <button @onclick="LoadMovies"
+                        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    🔄 Explorar de Nuevo
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Error message moderno -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="max-w-2xl mx-auto px-4">
+            <div class="bg-gradient-to-r from-red-900/50 to-red-800/50 backdrop-blur-sm border border-red-700/50 rounded-2xl p-8 text-center">
+                <div class="text-5xl mb-4">😞</div>
+                <h3 class="text-xl font-bold text-white mb-2">¡Oops! Algo salió mal</h3>
+                <p class="text-red-300 mb-6">@errorMessage</p>
+                <div class="flex justify-center space-x-4">
+                    <button @onclick="LoadMovies"
+                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2">
+                        <span>🔄</span>
+                        <span>Reintentar</span>
+                    </button>
+                    <button @onclick="() => errorMessage = string.Empty"
+                            class="bg-gray-600/50 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 backdrop-blur-sm">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Lista de películas que se va llenando con lazy loading
+    private List<Movie> movies = new List<Movie>();
+
+    // Película destacada para el hero section
+    private Models.MovieDetails? featuredMovie;
+
+    // Estados de la aplicación
+    private bool isLoading = false;
+    private bool isLoadingMore = false;
+    private bool hasReachedEnd = false;
+    private string errorMessage = string.Empty;
+
+    // Control de paginación
+    private int currentPage = 1;
+    private int totalPages = 0;
+    private int totalResults = 0;
+
+    // Referencia para JavaScript Interop
+    private DotNetObjectReference<Home>? dotNetObjectReference;
+
+    /// <summary>
+    /// Método que se ejecuta cuando el componente se inicializa
+    /// Carga la primera página de películas y configura el scroll infinito
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMovies();
+    }
+
+    /// <summary>
+    /// Método que se ejecuta después de que el componente se renderiza
+    /// Configura el listener de JavaScript para el scroll infinito
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Crear referencia para JavaScript
+            dotNetObjectReference = DotNetObjectReference.Create(this);
+
+            // Configurar el listener de scroll infinito
+            await JSRuntime.InvokeVoidAsync("scrollFunctions.addScrollListener", dotNetObjectReference);
+        }
+    }
+
+    /// <summary>
+    /// Carga la primera página de películas y selecciona una película destacada
+    /// </summary>
+    private async Task LoadMovies()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            StateHasChanged(); // Actualizar la UI
+
+            var response = await MovieService.GetPopularMoviesAsync(1);
+
+            if (response != null && response.Results.Any())
+            {
+                movies = response.Results;
+                currentPage = response.Page;
+                totalPages = response.TotalPages;
+                totalResults = response.TotalResults;
+                hasReachedEnd = currentPage >= totalPages;
+
+                // Cargar detalles de la primera película para el hero section
+                await LoadFeaturedMovie();
+            }
+            else
+            {
+                errorMessage = "No se pudieron cargar las películas. Verifica tu conexión a internet.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar películas: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Carga los detalles de la película destacada para el hero section
+    /// </summary>
+    private async Task LoadFeaturedMovie()
+    {
+        try
+        {
+            if (movies.Any())
+            {
+                // Seleccionar una película con buena puntuación para destacar
+                var topMovie = movies.Where(m => m.VoteAverage >= 7.0).FirstOrDefault() ?? movies.First();
+                featuredMovie = await MovieService.GetMovieDetailsAsync(topMovie.Id);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar película destacada: {ex.Message}");
+            // No mostrar error ya que es opcional
+        }
+    }
+
+    /// <summary>
+    /// Método llamado por JavaScript cuando se detecta scroll infinito
+    /// Carga la siguiente página de películas
+    /// </summary>
+    [JSInvokable]
+    public async Task LoadMoreMovies()
+    {
+        // Evitar múltiples llamadas simultáneas
+        if (isLoadingMore || hasReachedEnd || isLoading)
+            return;
+
+        try
+        {
+            isLoadingMore = true;
+            StateHasChanged();
+
+            var nextPage = currentPage + 1;
+            var response = await MovieService.GetPopularMoviesAsync(nextPage);
+
+            if (response != null && response.Results.Any())
+            {
+                // Agregar las nuevas películas a la lista existente
+                movies.AddRange(response.Results);
+                currentPage = response.Page;
+                totalPages = response.TotalPages;
+                totalResults = response.TotalResults;
+                hasReachedEnd = currentPage >= totalPages;
+            }
+            else
+            {
+                hasReachedEnd = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar más películas: {ex.Message}");
+            // No mostrar error en lazy loading para no interrumpir la experiencia
+        }
+        finally
+        {
+            isLoadingMore = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Navega a la página de detalles de una película específica
+    /// </summary>
+    /// <param name="movieId">ID de la película</param>
+    private void NavigateToDetails(int movieId)
+    {
+        Navigation.NavigateTo($"/movie/{movieId}");
+    }
+
+    /// <summary>
+    /// Liberar recursos cuando el componente se destruye
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        dotNetObjectReference?.Dispose();
+    }
+}

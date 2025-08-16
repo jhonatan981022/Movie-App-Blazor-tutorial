@@ -1,0 +1,38 @@
+name: 🚀 Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: 📦 Restore dependencies
+      run: dotnet restore MovieApp/MovieApp.csproj
+      
+    - name: 🏗️ Build project
+      run: dotnet build MovieApp/MovieApp.csproj --no-restore --configuration Release
+      
+    - name: 🧪 Run tests (if any)
+      run: dotnet test MovieApp/MovieApp.csproj --no-build --configuration Release --verbosity normal
+      continue-on-error: true
+      
+    - name: 📊 Publish build artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: blazor-app
+        path: MovieApp/bin/Release/net9.0/publish/
+        retention-days: 7
